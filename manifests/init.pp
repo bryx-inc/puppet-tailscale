@@ -43,6 +43,7 @@ class tailscale (
             'source' => $key_source,
           },
           before   => Package['tailscale'],
+          notify   => Exec['apt_update'],
         }
       }
       'RedHat': {
