@@ -63,8 +63,18 @@ class tailscale (
     }
   }
   if $manage_package {
-    package { 'tailscale':
-      ensure  => present,
+    case $facts['os']['family'] {
+      'Debian': {
+        package { 'tailscale':
+          ensure  => latest,
+          require => Exec['apt_update'],
+        }
+      }
+      default: {
+        package { 'tailscale':
+          ensure  => latest,
+        }
+      }
     }
   }
   if ($::facts.dig('os', 'distro', 'id') == 'Pop') {
