@@ -111,9 +111,8 @@ class tailscale (
     require     => Service['tailscaled'],
   }
   exec { 'run tailscale set':
-    command     => "tailscale set ${ts_args}",
+    command     => "tailscale set ${up_cli_options}",
     provider    => shell,
-    environment => $env,
     onlyif      => 'test $(tailscale status | wc -l) -gt 1',
     require     => Service['tailscaled'],
   }
