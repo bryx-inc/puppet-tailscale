@@ -110,10 +110,16 @@ class tailscale (
     unless      => 'test $(tailscale status | wc -l) -gt 1',
     require     => Service['tailscaled'],
   }
+
+  file { 'tailscale-cli-opts':
+    path => "${facts['puppet_vardir']}/tailscale-cli-opts",
+    content => $up_cli_options,
+  }
   exec { 'run tailscale set':
     command     => "tailscale set ${up_cli_options}",
     provider    => shell,
-    onlyif      => 'test $(tailscale status | wc -l) -gt 1',
+    subscribe   => File['tailscale-cli-opts'],
+    refreshonly => true,
     require     => Service['tailscaled'],
   }
 }
