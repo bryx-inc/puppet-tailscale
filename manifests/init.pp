@@ -97,17 +97,24 @@ class tailscale (
     # uses node encrypt to unwrap the sensitive value then encrypts it
     # on the command line during execution the value is decrypted and never exposed to logs since the value
     # is temporary only exposed in a env variable
-    $ts_command = "tailscale up --authkey=\$(puppet node decrypt --env SECRET) ${up_cli_options}".rstrip
+    $ts_args = "--authkey=\$(puppet node decrypt --env SECRET) ${up_cli_options}".rstrip
     $env = ["SECRET=${node_encrypt($auth_key.unwrap)}"]
   } else {
-    $ts_command = "tailscale up --authkey=\$SECRET ${up_cli_options}".rstrip
+    $ts_args = "--authkey=\$SECRET ${up_cli_options}".rstrip
     $env = ["SECRET=${auth_key.unwrap}"]
   }
   exec { 'run tailscale up':
-    command     => $ts_command,
+    command     => "tailscale up ${ts_args}",
     provider    => shell,
     environment => $env,
     unless      => 'test $(tailscale status | wc -l) -gt 1',
+    require     => Service['tailscaled'],
+  }
+  exec { 'run tailscale set':
+    command     => "tailscale set ${ts_args}",
+    provider    => shell,
+    environment => $env,
+    onlyif      => 'test $(tailscale status | wc -l) -gt 1',
     require     => Service['tailscaled'],
   }
 }
